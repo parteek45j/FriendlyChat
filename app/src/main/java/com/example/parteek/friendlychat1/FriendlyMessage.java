@@ -20,14 +20,16 @@ public class FriendlyMessage {
     private String text;
     private String name;
     private String photoUrl;
+    boolean side=false;
 
     public FriendlyMessage() {
     }
 
-    public FriendlyMessage(String text, String name, String photoUrl) {
+    public FriendlyMessage(String text, String name, String photoUrl,boolean side) {
         this.text = text;
         this.name = name;
         this.photoUrl = photoUrl;
+        this.side=side;
     }
 
     public String getText() {

@@ -64,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private EditText mMessageEditText;
     private Button mSendButton;
     private String mUsername;
-    FirebaseDatabase mFirebaseDatabase;
-    public DatabaseReference reference;
     FriendlyMessage friendlyMessage;
     List<FriendlyMessage> friendlyMessages;
+    FirebaseDatabase mFirebaseDatabase;
+    public DatabaseReference reference;
     ChildEventListener eventListener;
     FirebaseAuth firebaseAuth;
     FirebaseAuth.AuthStateListener authStateListener;
@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     StorageReference storageReference;
     public static final int RC_SIGN_IN=1;
     public static final int RC_PICKER=2;
+    boolean side;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseDatabase=FirebaseDatabase.getInstance();
         firebaseAuth=FirebaseAuth.getInstance();
         firebaseStorage=FirebaseStorage.getInstance();
-        reference=mFirebaseDatabase.getReference().child("messages").child("chat");
+        reference=mFirebaseDatabase.getReference().child("messages");
         storageReference=firebaseStorage.getReference().child("chatPhotos");
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize message ListView and its adapter
        friendlyMessages = new ArrayList<>();
-        mMessageAdapter = new MessageAdapter(this, R.layout.item_message, friendlyMessages);
+        mMessageAdapter = new MessageAdapter(this, R.layout.right, friendlyMessages);
         mMessageListView.setAdapter(mMessageAdapter);
 
         // Initialize progress bar
@@ -135,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                friendlyMessage=new FriendlyMessage(mMessageEditText.getText().toString(),mUsername,null);
+                boolean side=true;
+                friendlyMessage=new FriendlyMessage(mMessageEditText.getText().toString(),mUsername,null,true);
                 reference.push().setValue(friendlyMessage);
                 mMessageEditText.setText("");
             }
@@ -147,7 +149,12 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user=firebaseAuth.getCurrentUser();
                 if(user!=null){
                     Toast.makeText(MainActivity.this, "Successfull", Toast.LENGTH_SHORT).show();
-                    onSignedIn(user.getDisplayName());
+                    if (user.getDisplayName()!=null) {
+                        onSignedIn(user.getDisplayName());
+                    }else {
+                        mUsername=ANONYMOUS;
+                        onSignedIn(mUsername);
+                    }
                 }else {
                     onSignedOut();
                     startActivityForResult(
@@ -168,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode==RC_SIGN_IN){
             if (resultCode==RESULT_OK){
-                Toast.makeText(this, "Signed in", Toast.LENGTH_SHORT).show();
+
             }else if(resultCode==RESULT_CANCELED){
                 finish();
             }
@@ -179,8 +186,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     Uri url=taskSnapshot.getDownloadUrl();
-                    FriendlyMessage message=new FriendlyMessage(null,mUsername,url.toString());
+                    FriendlyMessage message=new FriendlyMessage(null,mUsername,url.toString(),true);
                     reference.push().setValue(message);
+                    Toast.makeText(MainActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
                 }
             });
         }

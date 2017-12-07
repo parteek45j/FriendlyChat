@@ -13,21 +13,32 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class MessageAdapter extends ArrayAdapter<FriendlyMessage> {
+    Context context;
+    int resource;
+    List<FriendlyMessage> objects;
     public MessageAdapter(Context context, int resource, List<FriendlyMessage> objects) {
         super(context, resource, objects);
+        this.context=context;
+        this.resource=resource;
+        this.objects=objects;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        FriendlyMessage message = getItem(position);
         if (convertView == null) {
-            convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.item_message, parent, false);
+            if (message.side) {
+                convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.right, parent, false);
+            }else {
+                convertView = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.item_message, parent, false);
+            }
         }
 
         ImageView photoImageView = (ImageView) convertView.findViewById(R.id.photoImageView);
         TextView messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
         TextView authorTextView = (TextView) convertView.findViewById(R.id.nameTextView);
 
-        FriendlyMessage message = getItem(position);
+
 
         boolean isPhoto = message.getPhotoUrl() != null;
         if (isPhoto) {
